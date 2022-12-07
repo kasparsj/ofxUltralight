@@ -100,6 +100,12 @@ vs:
 	ADDON_DLLS_TO_COPY += bin/UltralightCore.dll
 	ADDON_DLLS_TO_COPY += bin/WebCore.dll
 	ADDON_DLLS_TO_COPY += bin/AppCore.dll
+osx:
+	ADDON_DLLS_TO_COPY =
+	ADDON_DLLS_TO_COPY += bin/Ultralight.dylib
+	ADDON_DLLS_TO_COPY += bin/UltralightCore.dylib
+	ADDON_DLLS_TO_COPY += bin/WebCore.dylib
+	ADDON_DLLS_TO_COPY += bin/AppCore.dylib
 	
 linuxarmv6l:
 linuxarmv7l:

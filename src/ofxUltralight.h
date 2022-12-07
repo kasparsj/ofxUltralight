@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <ofMain.h>
 #include <Ultralight/Ultralight.h>
@@ -134,6 +134,19 @@ public:
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		string getStringFromJSstr(JSString str);
+        
+        ofTexture& getTexture() {
+            return oeTexture;
+        }
+        const ofTexture& getTexture() const {
+            return oeTexture;
+        }
+        ofPixels& getPixels() {
+            return pixels;
+        }
+        const ofPixels& getPixels() const {
+            return pixels;
+        }
 
 		Config config;
 		shared_ptr<GPUDriver> gpu_driver;
@@ -142,5 +155,6 @@ public:
 		JSContextRef jsContext;
 
 		ofVec2f offset;
+        ofPixels pixels;
 		ofTexture oeTexture, inspectorTexture;
 };

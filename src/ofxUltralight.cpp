@@ -1,4 +1,4 @@
-﻿#include "ofxUltralight.h"
+#include "ofxUltralight.h"
 
 
 void ofxUltralight::setup(int width, int height, string url) {
@@ -7,10 +7,9 @@ void ofxUltralight::setup(int width, int height, string url) {
 }
 
 void ofxUltralight::setup(int width, int height, ofVec2f t_offset, string url) {
-	//ofLogNotice(ofToDataPath("resources").c_str());
 	offset = t_offset;
 
-	config.resource_path = "../../../../addons/ofxUltralight/libs/resources";
+	config.resource_path = ofToDataPath("resources").c_str();
 	config.use_gpu_renderer = false;
 	config.device_scale = 1.0;
 	config.user_agent = "Mozilla/5.0 (Linux; Android 8.1.0; SM-G965F Build/OPM2.171019.029) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/7.2 Chrome/59.0.3071.125 Mobile Safari/537.36";
@@ -130,19 +129,17 @@ void ofxUltralight::draw() {
 	///
 		RefPtr<Bitmap> bitmap = bitmap_surface->bitmap();
 
-		void* pixels = bitmap->LockPixels();
+		void* pixels1 = bitmap->LockPixels();
 
 		/// Get the bitmap dimensions.
 		uint32_t width = bitmap->width();
 		uint32_t height = bitmap->height();
 		uint32_t stride = bitmap->row_bytes();
 
-		unsigned char* pixels2 = (unsigned char*)pixels;
-		// swap R and B channels (does nnot work in loadData later, don't know why.)
-		oeTexture.setSwizzle(GL_TEXTURE_SWIZZLE_R, GL_BLUE);
-		oeTexture.setSwizzle(GL_TEXTURE_SWIZZLE_B, GL_RED);
+		unsigned char* pixels2 = (unsigned char*)pixels1;
+        pixels.setFromExternalPixels(pixels2, width, height, OF_PIXELS_BGRA);
 		// load the pixels to ofTexture
-		oeTexture.loadData(pixels2, width, height, GL_RGBA);
+		oeTexture.loadData(pixels);
 
 		/// Unlock the Bitmap when we are done.
 		bitmap->UnlockPixels();

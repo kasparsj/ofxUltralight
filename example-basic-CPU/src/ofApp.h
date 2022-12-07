@@ -17,6 +17,6 @@ public:
 	void mouseReleased(int x, int y, int button);
 	void mouseScrolled(int x, int y, float scrollX, float scrollY);
 
-	ofxUltralight ul;
+    ofxUL::ofxUltralight ul;
 
 };

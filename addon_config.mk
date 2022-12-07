@@ -20,7 +20,7 @@ meta:
 	ADDON_AUTHOR = dasoe
 	ADDON_TAGS = "browser" "html" "ultralight"
 	ADDON_URL = http://github.com/dasoe/ofxUltralight
-	ADDON_PLATFORMS = vs
+	ADDON_PLATFORMS = osx vs
 	ADDON_VERSION = develop
 	ADDON_CATEGORY = bridges
 
@@ -100,20 +100,15 @@ vs:
 	ADDON_DLLS_TO_COPY += bin/UltralightCore.dll
 	ADDON_DLLS_TO_COPY += bin/WebCore.dll
 	ADDON_DLLS_TO_COPY += bin/AppCore.dll
-osx:
-	ADDON_DLLS_TO_COPY =
-	ADDON_DLLS_TO_COPY += bin/Ultralight.dylib
-	ADDON_DLLS_TO_COPY += bin/UltralightCore.dylib
-	ADDON_DLLS_TO_COPY += bin/WebCore.dylib
-	ADDON_DLLS_TO_COPY += bin/AppCore.dylib
 	
 linuxarmv6l:
 linuxarmv7l:
 android/armeabi:	
-android/armeabi-v7a:	
+android/armeabi-v7a:
+
 osx:
-	# osx/iOS only, any framework that should be included in the project
-	# ADDON_FRAMEWORKS =
+	ADDON_LDFLAGS = -rpath @loader_path/../../../../../../../addons/ofxUltralight/libs/lib/osx
+	
 ios:
 tvos:
 

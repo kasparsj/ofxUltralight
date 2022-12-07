@@ -1,6 +1,6 @@
 #include "ofxUltralight.h"
 
-using namespace ofxUL;
+using namespace ofxUltralight;
 
 void ViewAsset::load(int width, int height, ofVec2f t_offset, string url) {
     offset = t_offset;
@@ -218,8 +218,14 @@ void ViewAsset::mouseScrolled(int x, int y, float scrollX, float scrollY) {
     view->FireScrollEvent(scroll_event);
 }
 
-void ofxUltralight::setup() {
-	config.resource_path = ofToDataPath("resources").c_str();
+Manager* Manager::instance = NULL;
+
+bool Manager::setup() {
+    if (instance != NULL) {
+        return false;
+    }
+
+    config.resource_path = ofToDataPath("resources").c_str();
 	config.use_gpu_renderer = false;
 	config.device_scale = 1.0;
 	config.user_agent = "Mozilla/5.0 (Linux; Android 8.1.0; SM-G965F Build/OPM2.171019.029) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/7.2 Chrome/59.0.3071.125 Mobile Safari/537.36";
@@ -234,22 +240,26 @@ void ofxUltralight::setup() {
 	//platform.set_gpu_driver(gpu_driver.get());
 
 	renderer = Renderer::Create();
+    
+    instance = this;
+    
+    return true;
 }
 
-int ofxUltralight::load(int width, int height, string url) {
-    return load(width, height, ofVec2f(0), url);
+ViewAsset* Manager::createView(int width, int height, string url) {
+    return createView(width, height, ofVec2f(0), url);
 }
 
 //--------------------------------------------------------------
-int ofxUltralight::load(int width, int height, ofVec2f t_offset, string url) {
+ViewAsset* Manager::createView(int width, int height, ofVec2f t_offset, string url) {
     ViewAsset* asset = new ViewAsset(renderer->CreateView(width, height, false, nullptr));
-    assets.push_back(asset);
+    assets[asset->getId()] = asset;
     asset->load(width, height, t_offset, url);
-    return assets.size()-1;
+    return asset;
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::OnAddConsoleMessage(View* caller,
+void Manager::OnAddConsoleMessage(View* caller,
 	MessageSource source,
 	MessageLevel level,
 	const String& message,
@@ -268,12 +278,12 @@ void ofxUltralight::OnAddConsoleMessage(View* caller,
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::update() {
+void Manager::update() {
     if (renderer) {
         renderer->Update();
         
-        for (auto& asset : assets) {
-            asset->update();
+        for (auto& it : assets) {
+            it.second->update();
         }
         
         renderer->Render();
@@ -281,98 +291,130 @@ void ofxUltralight::update() {
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::draw() {
-    for (auto& asset : assets) {
-        if (asset->DOMready) {
-            asset->draw();
+void Manager::draw() {
+    for (auto& it : assets) {
+        if (it.second->DOMready) {
+            it.second->draw();
         }
     }
 }
 
-void ofxUltralight::draw(int i) {
+void Manager::draw(int i) {
     assets[i]->draw();
 }
 
-void ofxUltralight::unload(int i) {
-    delete assets[i];
-    assets.erase(assets.begin()+i);
+void Manager::removeView(int _id) {
+    delete assets[_id];
+    assets.erase(_id);
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::keyPressed(int key) {
-    for (auto& asset : assets) {
-        asset->keyPressed(key);
+void Manager::keyPressed(int key) {
+    for (auto& it : assets) {
+        it.second->keyPressed(key);
     }
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::keyReleased(int key) {
+void Manager::keyReleased(int key) {
 
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::mouseMoved(int x, int y) {
-    for (auto& asset : assets) {
-        asset->mouseMoved(x, y);
+void Manager::mouseMoved(int x, int y) {
+    for (auto& it : assets) {
+        it.second->mouseMoved(x, y);
     }
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::mouseDragged(int x, int y, int button) {
+void Manager::mouseDragged(int x, int y, int button) {
 
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::mousePressed(int x, int y, int button) {
-    for (auto& asset : assets) {
-        asset->mousePressed(x, y, button);
+void Manager::mousePressed(int x, int y, int button) {
+    for (auto& it : assets) {
+        it.second->mousePressed(x, y, button);
     }
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::mouseReleased(int x, int y, int button) {
-    for (auto& asset : assets) {
-        asset->mouseReleased(x, y, button);
+void Manager::mouseReleased(int x, int y, int button) {
+    for (auto& it : assets) {
+        it.second->mouseReleased(x, y, button);
     }
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::mouseEntered(int x, int y) {
+void Manager::mouseEntered(int x, int y) {
 
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::mouseExited(int x, int y) {
+void Manager::mouseExited(int x, int y) {
 
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::mouseScrolled(int x, int y, float scrollX, float scrollY) {
-    for (auto& asset : assets) {
-        asset->mouseScrolled(x, y, scrollX, scrollY);
+void Manager::mouseScrolled(int x, int y, float scrollX, float scrollY) {
+    for (auto& it : assets) {
+        it.second->mouseScrolled(x, y, scrollX, scrollY);
     }
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::windowResized(int w, int h) {
+void Manager::windowResized(int w, int h) {
 
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::gotMessage(ofMessage msg) {
+void Manager::gotMessage(ofMessage msg) {
 
 }
 
 //--------------------------------------------------------------
-void ofxUltralight::dragEvent(ofDragInfo dragInfo) {
+void Manager::dragEvent(ofDragInfo dragInfo) {
 
 }
 
 //--------------------------------------------------------------
-string ofxUltralight::getStringFromJSstr(JSString str) {
+string Manager::getStringFromJSstr(JSString str) {
 	auto length = JSStringGetLength(str);
 	auto buffer = new char[length];
 	JSStringGetUTF8CString(str, buffer, length);
 	
 	return (string)buffer;
+}
+
+namespace ofxUltralight {
+
+Manager* get() {
+    return Manager::get();
+}
+
+bool setup() {
+    return Manager::get()->setup();
+}
+
+void update() {
+    Manager::get()->update();
+}
+
+ViewAsset* createView(int width, int height, string url) {
+    return Manager::get()->createView(width, height, url);
+}
+
+ViewAsset* createView(int width, int height, ofVec2f t_offset, string url) {
+    return Manager::get()->createView(width, height, t_offset, url);
+}
+
+void removeView(int _id) {
+    Manager::get()->removeView(_id);
+}
+
+void draw(int _id) {
+    Manager::get()->draw(_id);
+}
+
 }

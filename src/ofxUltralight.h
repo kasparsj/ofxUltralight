@@ -7,7 +7,7 @@
 #include <AppCore/JSHelpers.h>
 //#include <opencv.hpp>
 
-namespace ofxUL {
+namespace ofxUltralight {
 
 using namespace ultralight;
 
@@ -67,7 +67,10 @@ public:
 
 class ViewAsset : public LoadListener, public ViewListener {
 public:
-    ViewAsset(Ref<View> view) : view(view) {}
+    ViewAsset(Ref<View> view) : view(view) {
+        static int nextId = 0;
+        _id = nextId++;
+    }
     
     void load(int width, int height, ofVec2f t_offset, string url);
     virtual void OnDOMReady(ultralight::View* caller, uint64_t frame_id, bool is_main_frame,const String& url);
@@ -92,10 +95,15 @@ public:
         return pixels;
     }
     
+    unsigned int getId() {
+        return _id;
+    }
+    
     bool DOMready = false;
     bool needs_redraw = false;
     
 private:
+    unsigned int _id;
     RefPtr<View> view, inspectorView;
     ofTexture oeTexture, inspectorTexture;
     JSContextRef jsContext;
@@ -106,7 +114,7 @@ private:
     //    GLuint pbo_id[2];
 };
 
-class ofxUltralight
+class Manager
 {
     
 public:
@@ -153,13 +161,13 @@ public:
                              uint32_t column_number,
                              const String& source_id);
     
-    void setup();
-    int load(int width, int height, string url);
-    int load(int width, int height, ofVec2f t_offset, string url);
+    bool setup();
+    ViewAsset* createView(int width, int height, string url);
+    ViewAsset* createView(int width, int height, ofVec2f t_offset, string url);
     void update();
     void draw();
-    void draw(int i);
-    void unload(int i);
+    void draw(int _id);
+    void removeView(int _id);
     
     void keyPressed(int key);
     void keyReleased(int key);
@@ -175,23 +183,42 @@ public:
     void gotMessage(ofMessage msg);
     string getStringFromJSstr(JSString str);
     
-    ofTexture& getTexture(int i) {
-        return assets[i]->getTexture();
+    ofTexture& getTexture(int _id) {
+        return assets[_id]->getTexture();
     }
-    const ofTexture& getTexture(int i) const {
-        return assets[i]->getTexture();
+    const ofTexture& getTexture(int _id) const {
+        return assets.at(_id)->getTexture();
     }
-    ofPixels& getPixels(int i) {
-        return assets[i]->getPixels();
+    ofPixels& getPixels(int _id) {
+        return assets[_id]->getPixels();
     }
-    const ofPixels& getPixels(int i) const {
-        return assets[i]->getPixels();
+    const ofPixels& getPixels(int _id) const {
+        return assets.at(_id)->getPixels();
+    }
+    
+    static Manager* get() {
+        if (!instance) {
+            Manager* man = new Manager();
+            man->setup();
+        }
+        return instance;
     }
     
     Config config;
     shared_ptr<GPUDriver> gpu_driver;
     RefPtr<Renderer> renderer;
-    vector<ViewAsset*> assets;
+    map<int, ViewAsset*> assets;
+    
+private:
+    static Manager* instance;
 };
+
+Manager* get();
+bool setup();
+void update();
+ViewAsset* createView(int width, int height, string url);
+ViewAsset* createView(int width, int height, ofVec2f t_offset, string url);
+void removeView(int _id);
+void draw(int _id);
 
 }
